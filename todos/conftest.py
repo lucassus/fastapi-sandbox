@@ -6,6 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, clear_mappers
 
 from todos.api import routes
+from todos.api.dependencies import get_container
 from todos.container import Container
 from todos.db.tables import metadata, start_mappers
 
@@ -51,9 +52,9 @@ def container():
 @pytest.fixture
 def client(container, session):
     container.session_provider.override(session)
-    container.wire(modules=[routes])
 
     app = FastAPI()
+    app.dependency_overrides[get_container] = lambda: container
     app.include_router(routes.router)
 
     with TestClient(app) as client:
