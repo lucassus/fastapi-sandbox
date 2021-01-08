@@ -9,7 +9,6 @@ from todos.container import Container
 from todos.db.repositories import AbstractRepository
 from todos.domain.services import Service
 
-# TODO: Nest routes
 router = APIRouter()
 
 

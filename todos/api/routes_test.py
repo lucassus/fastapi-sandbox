@@ -1,5 +1,6 @@
 from datetime import date
 
+from todos.db.repositories import FakeRepository
 from todos.domain.models import Todo
 
 
@@ -33,14 +34,16 @@ def test_integration(client):
     ]
 
 
-def test_todos_endpoint(session, client):
+def test_todos_endpoint(container, client):
     # Given
-    session.add(Todo(name="Test todo"))
-    session.add(Todo(name="The other todo", completed_at=date(2021, 1, 6)))
-    session.commit()
+    todos = [
+        Todo(id=1, name="Test todo"),
+        Todo(id=2, name="The other todo", completed_at=date(2021, 1, 6)),
+    ]
 
     # When
-    response = client.get("/todos")
+    with container.repository_provider.override(FakeRepository(todos)):
+        response = client.get("/todos")
 
     # Then
     assert response.status_code == 200
@@ -50,14 +53,21 @@ def test_todos_endpoint(session, client):
     ]
 
 
-def test_todo_endpoint_returns_todo(session, client):
-    session.add(Todo(id=1, name="Test name"))
-    response = client.get("/todos/1")
+def test_todo_endpoint_returns_todo(container, client):
+    # Given
+    todos = [Todo(id=1, name="Test name")]
 
+    # When
+    with container.repository_provider.override(FakeRepository(todos)):
+        response = client.get("/todos/1")
+
+    # Then
     assert response.status_code == 200
     assert response.json() == {"id": 1, "name": "Test name", "completed_at": None}
 
 
-def test_todo_endpoint_returns_404(client):
-    response = client.get("/todos/1")
+def test_todo_endpoint_returns_404(container, client):
+    with container.repository_provider.override(FakeRepository([])):
+        response = client.get("/todos/1")
+
     assert response.status_code == 404

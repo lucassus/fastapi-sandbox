@@ -17,7 +17,7 @@ def create_app() -> FastAPI:
     app.include_router(routes.router)
 
     @app.middleware("http")
-    async def add_process_time_header(request: Request, call_next):
+    async def session_middleware(request: Request, call_next):
         session = SessionLocal()
         container.session_provider.override(session)
 
