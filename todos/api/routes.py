@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 
 from todos.api import schemas
 from todos.api.dependencies import get_container
-from todos.container import Container
 
 router = APIRouter()
 
@@ -17,7 +16,7 @@ def helo_endpoint():
 
 @router.get("/todos", response_model=List[schemas.Todo])
 def todos_endpoint(
-    container: Container = Depends(get_container),
+    container=Depends(get_container),
 ):
     repository = container.repository_provider()
     return repository.list()
@@ -30,7 +29,7 @@ def todos_endpoint(
 )
 def todo_endpoint(
     id: int,
-    container: Container = Depends(get_container),
+    container=Depends(get_container),
 ):
     repository = container.repository_provider()
     todo = repository.get(id)
@@ -44,7 +43,7 @@ def todo_endpoint(
 @router.post("/todos", response_model=schemas.Todo)
 def todo_create_endpoint(
     todo: schemas.CreateTodo,
-    container: Container = Depends(get_container),
+    container=Depends(get_container),
 ):
     repository = container.repository_provider()
     return repository.create(todo.name)
@@ -53,7 +52,7 @@ def todo_create_endpoint(
 @router.put("/todos/{id}/complete", response_model=schemas.Todo)
 def todo_complete_endpoint(
     id: int,
-    container: Container = Depends(get_container),
+    container=Depends(get_container),
 ):
     service = container.service_provider()
     return service.complete(id)
@@ -62,7 +61,7 @@ def todo_complete_endpoint(
 @router.put("/todos/{id}/incomplete", response_model=schemas.Todo)
 def todo_incomplete_endpoint(
     id: int,
-    container: Container = Depends(get_container),
+    container=Depends(get_container),
 ):
     service = container.service_provider()
     return service.incomplete(id)

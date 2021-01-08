@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session, clear_mappers
 
 from todos.api import routes
 from todos.api.dependencies import get_container
-from todos.container import Container
 from todos.db.tables import metadata, start_mappers
 
 
@@ -44,15 +43,12 @@ def session(engine, tables):
 
 
 @pytest.fixture
-def container():
-    container = Container()
-    return container
+def container(session):
+    yield from get_container(session)
 
 
 @pytest.fixture
-def client(container, session):
-    container.session_provider.override(session)
-
+def client(container):
     app = FastAPI()
     app.dependency_overrides[get_container] = lambda: container
     app.include_router(routes.router)
