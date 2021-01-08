@@ -1,11 +1,9 @@
 from dependency_injector import providers
-from dependency_injector.containers import DynamicContainer
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from todos.db.repositories import Repository
+from todos.container import Container
 from todos.db.session import SessionLocal
-from todos.domain.services import Service
 
 
 def _get_session():
@@ -13,16 +11,13 @@ def _get_session():
 
     try:
         yield session
+    except:
+        session.rollback()
     finally:
         session.close()
 
 
+# TODO: Inline it?
 def get_container(session: Session = Depends(_get_session)):
-    container = DynamicContainer()
-
-    container.repository_provider = providers.Factory(Repository, session=session)
-    container.service_provider = providers.Factory(
-        Service, repository=container.repository_provider
-    )
-
+    container = Container(session_provider=providers.Object(session))
     yield container
