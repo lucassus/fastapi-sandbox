@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from todos.db.repositories import AbstractRepository
+from todos.domain.abstract_repository import AbstractRepository
 from todos.domain.models import Todo
 
 

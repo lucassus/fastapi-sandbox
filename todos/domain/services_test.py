@@ -1,8 +1,8 @@
 from datetime import date
 
-from todos.db.repositories import FakeRepository
 from todos.domain.models import Todo
 from todos.domain.services import Service
+from todos.fake_repository import FakeRepository
 
 
 def test_complete():

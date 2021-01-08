@@ -1,7 +1,7 @@
 from datetime import date
 
-from todos.db.repositories import FakeRepository
 from todos.domain.models import Todo
+from todos.fake_repository import FakeRepository
 
 
 def test_hello_endpoint(client):
@@ -42,7 +42,7 @@ def test_todos_endpoint(container, client):
     ]
 
     # When
-    with container.repository_provider.override(FakeRepository(todos)):
+    with container.repository.override(FakeRepository(todos)):
         response = client.get("/todos")
 
     # Then
@@ -58,7 +58,7 @@ def test_todo_endpoint_returns_todo(container, client):
     todos = [Todo(id=1, name="Test name")]
 
     # When
-    with container.repository_provider.override(FakeRepository(todos)):
+    with container.repository.override(FakeRepository(todos)):
         response = client.get("/todos/1")
 
     # Then
@@ -67,7 +67,7 @@ def test_todo_endpoint_returns_todo(container, client):
 
 
 def test_todo_endpoint_returns_404(container, client):
-    with container.repository_provider.override(FakeRepository([])):
+    with container.repository.override(FakeRepository([])):
         response = client.get("/todos/1")
 
     assert response.status_code == 404
