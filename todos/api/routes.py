@@ -1,12 +1,12 @@
 from typing import List
 
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
 
 from todos.api import schemas
-from todos.api.dependencies import get_session
-from todos.db.repositories import Repository
+from todos.container import Container
+from todos.db.repositories import AbstractRepository
 from todos.domain.services import Service
 
 # TODO: Nest routes
@@ -19,8 +19,10 @@ def helo_endpoint():
 
 
 @router.get("/todos", response_model=List[schemas.Todo])
-def todos_endpoint(session: Session = Depends(get_session)):
-    repository = Repository(session=session)
+@inject
+def todos_endpoint(
+    repository: AbstractRepository = Depends(Provide[Container.repository_provider]),
+):
     return repository.list()
 
 
@@ -29,8 +31,11 @@ def todos_endpoint(session: Session = Depends(get_session)):
     response_model=schemas.Todo,
     responses={404: {"description": "Todo not found"}},
 )
-def todo_endpoint(id: int, session: Session = Depends(get_session)):
-    repository = Repository(session=session)
+@inject
+def todo_endpoint(
+    id: int,
+    repository: AbstractRepository = Depends(Provide[Container.repository_provider]),
+):
     todo = repository.get(id)
 
     if todo is None:
@@ -40,20 +45,26 @@ def todo_endpoint(id: int, session: Session = Depends(get_session)):
 
 
 @router.post("/todos", response_model=schemas.Todo)
+@inject
 def todo_create_endpoint(
-    todo: schemas.CreateTodo, session: Session = Depends(get_session)
+    todo: schemas.CreateTodo,
+    repository: AbstractRepository = Depends(Provide[Container.repository_provider]),
 ):
-    repository = Repository(session=session)
     return repository.create(todo.name)
 
 
 @router.put("/todos/{id}/complete", response_model=schemas.Todo)
-def todo_complete_endpoint(id: int, session: Session = Depends(get_session)):
-    service = Service(repository=Repository(session))
+@inject
+def todo_complete_endpoint(
+    id: int,
+    service: Service = Depends(Provide[Container.service_provider]),
+):
     return service.complete(id)
 
 
 @router.put("/todos/{id}/incomplete", response_model=schemas.Todo)
-def todo_incomplete_endpoint(id: int, session: Session = Depends(get_session)):
-    service = Service(repository=Repository(session))
+@inject
+def todo_incomplete_endpoint(
+    id: int, service: Service = Depends(Provide[Container.service_provider])
+):
     return service.incomplete(id)
