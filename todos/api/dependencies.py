@@ -11,7 +11,7 @@ def _get_session():
 
     try:
         yield session
-    except:
+    except Exception:
         session.rollback()
         raise
     finally:

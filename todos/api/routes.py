@@ -54,8 +54,7 @@ def todo_complete_endpoint(
     id: int,
     container: Container = Depends(get_container),
 ):
-    service = container.service()
-    return service.complete(id)
+    return container.complete_todo(id)
 
 
 @router.put("/todos/{id}/incomplete", response_model=schemas.Todo)
@@ -63,5 +62,4 @@ def todo_incomplete_endpoint(
     id: int,
     container: Container = Depends(get_container),
 ):
-    service = container.service()
-    return service.incomplete(id)
+    return container.incomplete_todo(id)

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from todos.domain.models import Todo
 from todos.fake_repository import FakeRepository
@@ -11,7 +11,7 @@ def test_hello_endpoint(client):
     assert response.json() == {"message": "Hello World"}
 
 
-def test_integration(client):
+def test_integration(container, client):
     response = client.get("/todos")
 
     assert response.status_code == 200
@@ -26,12 +26,20 @@ def test_integration(client):
     response = client.get("/todos")
 
     assert response.status_code == 200
-    todos = response.json()
-    assert len(todos) == 2
-    assert todos == [
+    assert response.json() == [
         {"id": 1, "name": "Test todo", "completed_at": None},
         {"id": 2, "name": "The other todo", "completed_at": None},
     ]
+
+    with container.now.override(lambda: datetime(2021, 1, 8, 11, 22)):
+        response = client.put("/todos/1/complete")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": 1,
+        "name": "Test todo",
+        "completed_at": "2021-01-08",
+    }
 
 
 def test_todos_endpoint(container, client):
